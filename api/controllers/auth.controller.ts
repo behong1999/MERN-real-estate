@@ -1,13 +1,13 @@
 import User from '../models/user.model';
 import { NextFunction, Request, Response } from 'express';
-import { hashSync } from "bcrypt";
+import bcrypt from 'bcrypt';
 
 // import { errorHandler } from '../utils/error.js';
 // import jwt from 'jsonwebtoken';
 
 export const signUp = async (req:Request, res:Response, next:NextFunction) => {
   const { username, email, password } = req.body;
-  const hashedPassword = hashSync(password, 10);
+  const hashedPassword = bcrypt.hashSync(password, 10);
   const newUser = new User({ username, email, password: hashedPassword });
   try {
     await newUser.save();
