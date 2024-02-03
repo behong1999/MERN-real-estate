@@ -1,11 +1,8 @@
-import React from 'react';
 import { FaSearch } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 // import { useSelector } from 'react-redux';
 
-type Props = {};
-
-const NavBar = (props: Props) => {
+const NavBar = () => {
   //   const { currentUser } = useSelector((state) => state.user);
 
   return (
@@ -21,7 +18,7 @@ const NavBar = (props: Props) => {
           <input
             type='text'
             placeholder='Search...'
-            className='px-1 bg-transparent focus:outline-none w-24 sm:w-64'
+            className='px-1 bg-transparent focus:outline-none w-30 sm:w-64'
           />
           <button type='submit' className=''>
             <FaSearch />
@@ -38,7 +35,7 @@ const NavBar = (props: Props) => {
               About
             </li>
           </Link>
-          <Link to='/profile'>
+          <Link to='/sign-in'>
             <li className=' text-slate-700 hover:underline'>Sign in</li>
             {/* {currentUser ? (
               <img
