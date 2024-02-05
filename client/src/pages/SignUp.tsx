@@ -4,7 +4,7 @@ import Spinner from '../components/Spinner';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({});
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,7 +32,7 @@ const SignUp = () => {
         return;
       }
       setLoading(false);
-      setError(null);
+      setError(undefined);
       navigate('/sign-in');
     } catch (error) {
       setLoading(false);
