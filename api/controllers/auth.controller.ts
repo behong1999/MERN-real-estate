@@ -79,7 +79,7 @@ export const google = async (
       });
       await newUser.save();
       const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET as string);
-      const { password: pass, ...rest } = newUser.toObject();
+      const { password, ...rest } = newUser.toObject();
       res
         .cookie('access_token', token, { httpOnly: true })
         .status(200)
