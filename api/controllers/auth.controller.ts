@@ -1,4 +1,4 @@
-import User from '../models/user.model';
+import UserModel from '../models/user.model';
 import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { errorHandler } from '../utils/error';
@@ -11,7 +11,7 @@ export const signUp = async (
 ) => {
   const { username, email, password } = req.body;
   const hashedPassword = bcrypt.hashSync(password, 10);
-  const newUser = new User({ username, email, password: hashedPassword });
+  const newUser = new UserModel({ username, email, password: hashedPassword });
   try {
     await newUser.save();
     res.status(201).json('User Created Successfully!');
@@ -27,7 +27,7 @@ export const signIn = async (
 ) => {
   const { email, password } = req.body;
   try {
-    const validUser = await User.findOne({ email });
+    const validUser = await UserModel.findOne({ email });
     if (!validUser) return next(errorHandler(404, 'User Not Found!'));
     const validPassword = bcrypt.compareSync(password, validUser.password);
     if (!validPassword) return next(errorHandler(401, 'Wrong credentials!'));
@@ -52,9 +52,12 @@ export const google = async (
   next: NextFunction
 ) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
+    const user = await UserModel.findOne({ email: req.body.email });
     if (user) {
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string);
+      const token = jwt.sign(
+        { id: user._id },
+        process.env.JWT_SECRET as string
+      );
       const { password: pass, ...rest } = user.toObject();
       res
         .cookie('access_token', token, { httpOnly: true })
@@ -64,12 +67,12 @@ export const google = async (
       /*
         36 means base-36 characters including a-z, A-Z, 0-9
         Generate Random 16-characters Password
-      */ 
+      */
       const generatedPassword =
         Math.random().toString(36).slice(-8) +
         Math.random().toString(36).slice(-8);
       const hashedPassword = bcrypt.hashSync(generatedPassword, 10);
-      const newUser = new User({
+      const newUser = new UserModel({
         username:
           req.body.name.split(' ').join('').toLowerCase() +
           Math.random().toString(36).slice(-4),
@@ -78,7 +81,10 @@ export const google = async (
         avatar: req.body.photo,
       });
       await newUser.save();
-      const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET as string);
+      const token = jwt.sign(
+        { id: newUser._id },
+        process.env.JWT_SECRET as string
+      );
       const { password, ...rest } = newUser.toObject();
       res
         .cookie('access_token', token, { httpOnly: true })

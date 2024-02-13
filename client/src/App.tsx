@@ -1,16 +1,15 @@
-import React from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Home from './pages/Home';
-import SignIn from './pages/SignIn';
-import About from './pages/About';
-import SignUp from './pages/SignUp';
-import Profile from './pages/Profile';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import NavBar from './components/NavBar';
 import PrivateRoute from './components/PrivateRoute';
+import About from './pages/About';
+import Home from './pages/Home';
+import Profile from './pages/Profile';
+import SignIn from './pages/SignIn';
+import SignUp from './pages/SignUp';
 
 const App = () => {
   return (
-    <BrowserRouter>
+    <Router>
       <NavBar />
       <Routes>
         <Route path='/' element={<Home />} />
@@ -27,7 +26,7 @@ const App = () => {
           /> */}
         </Route>
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 };
 

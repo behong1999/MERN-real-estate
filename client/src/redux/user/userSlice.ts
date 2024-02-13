@@ -1,11 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-
-interface User {
-  username: string;
-  email: string;
-  password: string;
-  avatar: string;
-}
+import { User } from '../../utils/types';
 
 const initialState: {
   currentUser: User | undefined;
@@ -25,7 +19,7 @@ const userSlice = createSlice({
       state.loading = true;
     },
     signInSuccess: (state, action) => {
-      state.currentUser = action.payload;
+      state.currentUser = { ...action.payload, id: action.payload._id };
       state.loading = false;
       state.error = undefined;
     },
@@ -37,7 +31,7 @@ const userSlice = createSlice({
       state.loading = true;
     },
     updateUserSuccess: (state, action) => {
-      state.currentUser = action.payload;
+      state.currentUser = { ...action.payload, id: action.payload._id };
       state.loading = false;
       state.error = undefined;
     },

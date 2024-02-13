@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
-import User from '../models/user.model';
+import UserModel from '../models/user.model';
 import { errorHandler } from '../utils/error';
 
 export const test = (req: Request, res: Response) => {
@@ -15,27 +15,27 @@ export const updateUser = async (
   next: NextFunction
 ) => {
   try {
-    const user = await User.findById(req.params.id);
+    const userId = req.params.id;
+    const user = await UserModel.findById(userId);
 
     // Check if user exists
     if (!user) {
       return next(errorHandler(404, 'User not found!'));
     }
 
-    //Check if user is updating their own account
-    if (req.params.id !== user._id.toString()) {
+    // Check if user is updating their own account
+    if (user.id != userId) {
       return next(errorHandler(401, 'You can only update your own account!'));
     }
 
-    // Check if password is being updated
+    // Hash the password if it's being updated or provided
     if (req.body.password) {
       req.body.password = bcrypt.hashSync(req.body.password, 10);
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      userId,
       {
-        // Need to specify which fields to update and avoid hacking
         $set: {
           username: req.body.username,
           email: req.body.email,
@@ -43,12 +43,34 @@ export const updateUser = async (
           avatar: req.body.avatar,
         },
       },
-      { new: true } // Return the updated document rather than the original document
+      { new: true }
     );
 
-    const { password, ...rest } = (updatedUser && updatedUser.toObject()) || {};
+    if (!updatedUser) {
+      return next(errorHandler(500, 'Failed to update user'));
+    }
+
+    const { password, ...rest } = updatedUser && updatedUser.toObject();
 
     res.status(200).json(rest);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if ((req as any).user.id !== req.params.id)
+    return next(errorHandler(401, 'You can only delete your own account!'));
+  try {
+    await UserModel.findByIdAndDelete(req.params.id);
+    // Cannot set headers after the response has been sent
+    // Clear cookie first
+    res.clearCookie('access_token');
+    res.status(200).json('User has been deleted!');
   } catch (error) {
     next(error);
   }

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { IUser } from '../models/user.model';
 import { errorHandler } from './error';
+import { IUser } from './types';
 
 export const verifyToken = (
   req: Request,

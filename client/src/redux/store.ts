@@ -4,10 +4,6 @@ import storage from 'redux-persist/lib/storage';
 import persistReducer from 'redux-persist/lib/persistReducer';
 import { persistStore } from 'redux-persist';
 
-
-
-
-
 const rootReducer = combineReducers({
   user: userReducer,
 });

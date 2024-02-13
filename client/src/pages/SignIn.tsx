@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Spinner from '../components/Spinner';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import OAuth from '../components/OAuth';
+import Spinner from '../components/Spinner';
+import { RootState } from '../redux/store';
 import {
   signInFailure,
   signInStart,
   signInSuccess,
 } from '../redux/user/userSlice';
-import { RootState } from '../redux/store';
-import OAuth from '../components/OAuth';
 
 const SignIn = () => {
   const [formData, setFormData] = useState({});
@@ -33,11 +33,12 @@ const SignIn = () => {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      console.log(data);
+
       if (data.success === false) {
         dispatch(signInFailure(data.message as string));
         return;
       }
+
       dispatch(signInSuccess(data));
       navigate('/');
     } catch (error) {
@@ -70,7 +71,7 @@ const SignIn = () => {
         >
           {loading ? <Spinner /> : 'Sign In'}
         </button>
-        <OAuth/>
+        <OAuth />
       </form>
       <div className='flex gap-2 mt-5'>
         <p>Don't have an account?</p>
