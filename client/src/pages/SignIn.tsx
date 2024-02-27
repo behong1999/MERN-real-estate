@@ -9,9 +9,11 @@ import {
   signInStart,
   signInSuccess,
 } from '../redux/user/userSlice';
+import axios from 'axios';
+import { FormData } from '../utils/types';
 
 const SignIn = () => {
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState<FormData>({});
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state: RootState) => state.user);
@@ -25,20 +27,26 @@ const SignIn = () => {
     e.preventDefault(); //Prevent refreshing of the page
     try {
       dispatch(signInStart());
-      const res = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json();
 
+      // const res = await fetch('/api/auth/signin', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(formData),
+      // });
+      // const data = await res.json();
+      // if (data.success === false) {
+      //   dispatch(signInFailure(data.message as string));
+      //   return;
+      // }
+
+      const res = await axios.post('/api/auth/signin', formData);
+      const data = res.data;
       if (data.success === false) {
         dispatch(signInFailure(data.message as string));
         return;
       }
-
       dispatch(signInSuccess(data));
       navigate('/');
     } catch (error) {
@@ -62,6 +70,7 @@ const SignIn = () => {
           placeholder='Password'
           className='border p-3 rounded-lg'
           id='password'
+          autoComplete='on'
           onChange={handleChange}
         />
         {error && <p className='text-red-500'>{error}</p>}
