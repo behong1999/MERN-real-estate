@@ -40,14 +40,16 @@ const OAuth = () => {
       const auth = getAuth(app);
       const result = await signInWithPopup(auth, provider);
 
-      const response = await axios.post<User>('/api/auth/google', {
-        name: result.user.displayName,
-        email: result.user.email,
-        photo: result.user.photoURL,
-      });
-
-      dispatch(signInSuccess(response.data));
-      navigate('/');
+      axios
+        .post<User>('/api/auth/google', {
+          name: result.user.displayName,
+          email: result.user.email,
+          photo: result.user.photoURL,
+        })
+        .then((res) => {
+          dispatch(signInSuccess(res.data));
+          navigate('/');
+        });
     } catch (error) {
       console.error(error);
     }

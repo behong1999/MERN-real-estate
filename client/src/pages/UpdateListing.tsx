@@ -5,15 +5,16 @@ import {
   ref,
   uploadBytesResumable,
 } from 'firebase/storage';
-import { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { app } from '../../firebase';
 import { RootState } from '../redux/store';
 
-const CreateListing = () => {
+const UpdateListing = () => {
   const { currentUser } = useSelector((state: RootState) => state.user);
   const navigate = useNavigate();
+  const params = useParams();
   const [files, setFiles] = useState<File[]>([]);
   const [formData, setFormData] = useState({
     imageUrls: [] as string[],
@@ -39,35 +40,45 @@ const CreateListing = () => {
   const [error, setError] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    try {
-      if (formData.imageUrls.length < 1)
-        return setError('You must upload at least one image');
-      // + is used to convert string to number
-      if (+formData.regularPrice < +formData.discountPrice)
-        return setError('Discount price must be lower than regular price');
-      setLoading(true);
-      setError(undefined);
-      axios
-        .post('/api/listing/create', {
-          ...formData,
-          userRef: currentUser!.id,
-        })
+  useEffect(() => {
+    const fetchListing = async () => {
+      const listingId = params.listingId;
+      axios(`/api/listing/get/${listingId}`)
         .then((res) => {
           const data = res.data;
-          setLoading(false);
-          navigate(`/listing/${data._id}`);
+          setFormData(data);
         })
-        .catch((error) => {
-          setError(error.response.data.message);
+        .catch((err) => {
+          console.log(err.response.data.message);
         });
-    } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-      }
-      setLoading(false);
-    }
+    };
+
+    fetchListing();
+  }, []);
+
+  const handleSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (formData.imageUrls.length < 1)
+      return setError('You must upload at least one image');
+    // + is used to convert string to number
+    if (+formData.regularPrice < +formData.discountPrice)
+      return setError('Discount price must be lower than regular price');
+    setLoading(true);
+    setError(undefined);
+    axios
+      .post(`/api/listing/update/${params.listingId}`, {
+        ...formData,
+        userRef: currentUser!.id,
+      })
+      .then((res) => {
+        const data = res.data;
+        setLoading(false);
+        navigate(`/listing/${data._id}`);
+      })
+      .catch((err) => {
+        setError(err.response.data.message);
+        setLoading(false);
+      });
   };
 
   const handleChange = (
@@ -168,7 +179,7 @@ const CreateListing = () => {
   return (
     <main className='p-3 max-w-4xl mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>
-        Create a Listing
+        Update a Listing
       </h1>
       <form onSubmit={handleSubmit} className='flex flex-col sm:flex-row gap-4'>
         {/* LEFT SIDE */}
@@ -378,7 +389,7 @@ const CreateListing = () => {
             disabled={loading || uploading}
             className='font-semibold p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80'
           >
-            {loading ? 'Creating...' : 'Create listing'}
+            {loading ? 'Updating...' : 'Update listing'}
           </button>
           {error && <p className='text-red-700 text-sm'>{error}</p>}
         </div>
@@ -387,4 +398,4 @@ const CreateListing = () => {
   );
 };
 
-export default CreateListing;
+export default UpdateListing;

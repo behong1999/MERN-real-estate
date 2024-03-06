@@ -21,12 +21,15 @@ import {
   updateUserStart,
   updateUserSuccess,
 } from '../redux/user/userSlice';
-import { FormData, User } from '../utils/types';
+import { FormData, Listing, User } from '../utils/types';
 import { ToastContainer, toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 const Profile = () => {
   const fileRef = useRef<HTMLInputElement>(null);
+  const listingsRef = useRef<HTMLDivElement>(null);
+
   const dispatch = useDispatch();
   const { currentUser, loading, error } = useSelector(
     (state: RootState) => state.user
@@ -37,6 +40,8 @@ const Profile = () => {
   const [formData, setFormData] = useState<FormData>({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [emailChange, setEmailChange] = useState(false);
+  const [showListingsError, setShowListingsError] = useState(false);
+  const [userListings, setUserListings] = useState<Listing[]>([]);
 
   useEffect(() => {
     if (file) {
@@ -75,70 +80,102 @@ const Profile = () => {
   const handleSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    try {
-      dispatch(updateUserStart());
-      const prevEmail = currentUser!.email;
-      const res = await fetch(`/api/user/update/${currentUser!.id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json();
-      if (data.success === false) {
-        dispatch(updateUserFailure(data.message));
+    dispatch(updateUserStart());
+    const prevEmail = currentUser!.email;
+    axios
+      .post(`/api/user/update/${currentUser!.id}`, formData)
+      .then((res) => {
+        const data = res.data;
+        dispatch(updateUserSuccess(data as User));
+        setUpdateSuccess(true);
+        if (currentUser && formData.email && formData.email !== prevEmail) {
+          setEmailChange(true);
+        } else {
+          setEmailChange(false);
+        }
+      })
+      .catch((err) => {
+        dispatch(updateUserFailure(err.response.data.message));
         return;
-      }
-
-      dispatch(updateUserSuccess(data as User));
-      setUpdateSuccess(true);
-      if (currentUser && formData.email && formData.email !== prevEmail) {
-        setEmailChange(true);
-      } else {
-        setEmailChange(false);
-      }
-    } catch (error) {
-      if (error instanceof Error) dispatch(updateUserFailure(error.message));
-    }
+      });
   };
 
   const handleDeleteUser = async () => {
-    try {
-      dispatch(deleteUserStart());
-      const res = await fetch(`/api/user/delete/${currentUser!.id}`, {
-        method: 'DELETE',
-      });
-      const data = await res.json();
-      if (data.success === false) {
-        dispatch(deleteUserFailure(data.message));
+    dispatch(deleteUserStart());
+    axios
+      .delete(`/api/user/delete/${currentUser!.id}`)
+      .then((res) => {
+        const data = res.data;
+        toast.warning('Account will be deleted soon.', {
+          position: 'top-center',
+          autoClose: 1500,
+        });
+        setTimeout(() => {
+          dispatch(deleteUserSuccess(data));
+        }, 2000);
+      })
+      .catch((err) => {
+        dispatch(deleteUserFailure(err.response.data.message));
         return;
-      }
-      toast.warning('Account will be deleted soon.', {
-        position: 'top-center',
-        autoClose: 1500,
       });
-      setTimeout(() => {
-        dispatch(deleteUserSuccess(data));
-      }, 2000);
-    } catch (error) {
-      if (error instanceof Error) dispatch(deleteUserFailure(error.message));
-    }
   };
 
   const handleSignOut = async () => {
     try {
       dispatch(signOutUserStart());
-      const res = await fetch(`/api/auth/signout`);
-      const data = await res.json();
-      if (data.success === false) {
-        dispatch(signOutUserFailure(data.message));
-        return;
-      }
-      dispatch(signOutUserSuccess(data));
+      axios(`/api/auth/signout`)
+        .then((res) => {
+          const data = res.data;
+          dispatch(signOutUserSuccess(data));
+        })
+        .catch((err) => {
+          dispatch(signOutUserFailure(err.response.data.message));
+          return;
+        });
     } catch (error) {
       if (error instanceof Error) dispatch(deleteUserFailure(error.message));
     }
+  };
+
+  const handleShowListings = () => {
+    setShowListingsError(false);
+    axios
+      .get(`/api/user/listings/${currentUser!.id}`)
+      .then((res) => {
+        const data = res.data;
+        setUserListings(data);
+        setTimeout(() => {
+          if (listingsRef.current) {
+            listingsRef.current.scrollIntoView({
+              behavior: 'smooth',
+            });
+          }
+        }, 500);
+      })
+      .catch(() => {
+        setShowListingsError(true);
+        return;
+      });
+  };
+
+  const handleListingDelete = async (listingId: string) => {
+    axios
+      .delete(`/api/listing/delete/${listingId}`)
+      .then((res) => {
+        const data = res.data;
+        setUserListings((prev) =>
+          prev.filter((listing) => listing._id !== listingId)
+        );
+
+        toast.success(data, {
+          position: 'top-center',
+          autoClose: 1500,
+        });
+      })
+      .catch((err) => {
+        console.log(err.response.data.message);
+        return;
+      });
   };
 
   return (
@@ -213,7 +250,7 @@ const Profile = () => {
           {loading ? 'Loading...' : 'Update'}
         </button>
         <Link
-          className='bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'
+          className='font-semibold bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'
           to={'/create-listing'}
         >
           Create Listing
@@ -243,6 +280,56 @@ const Profile = () => {
             }`
           : ''}
       </p>
+      <button
+        onClick={handleShowListings}
+        className='font-semibold text-green-700 w-full'
+      >
+        Show Listings
+      </button>
+
+      <p className='text-red-700 mt-5 text-center'>
+        {showListingsError ? 'Error: Cannot show listings' : ''}
+      </p>
+
+      {userListings && userListings.length > 0 && (
+        <div className='flex flex-col gap-4' ref={listingsRef}>
+          <h1 className='text-center mt-7 text-2xl font-semibold'>
+            Your Listings
+          </h1>
+          {userListings.map((listing) => (
+            <div
+              key={listing._id}
+              className='border rounded-lg p-3 flex justify-between items-center gap-4 bg-slate-200'
+            >
+              <Link to={`/listing/${listing._id}`}>
+                <img
+                  src={listing.imageUrls[0]}
+                  alt='listing cover'
+                  className='h-16 w-16 object-contain'
+                />
+              </Link>
+              <Link
+                className='text-slate-700 font-semibold  hover:underline truncate flex-1'
+                to={`/listing/${listing._id}`}
+              >
+                <p>{listing.name}</p>
+              </Link>
+
+              <div className='flex flex-col item-center'>
+                <button
+                  onClick={() => handleListingDelete(listing._id)}
+                  className='text-red-700 uppercase'
+                >
+                  Delete
+                </button>
+                <Link to={`/update-listing/${listing._id}`}>
+                  <button className='text-green-700 uppercase'>Edit</button>
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       <ToastContainer />
     </div>
   );

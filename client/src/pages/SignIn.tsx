@@ -24,7 +24,7 @@ const SignIn = () => {
     });
   };
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); //Prevent refreshing of the page
+    e.preventDefault();
     try {
       dispatch(signInStart());
 
@@ -40,15 +40,20 @@ const SignIn = () => {
       //   dispatch(signInFailure(data.message as string));
       //   return;
       // }
+      // dispatch(signInSuccess(data));
+      // navigate('/');
 
-      const res = await axios.post('/api/auth/signin', formData);
-      const data = res.data;
-      if (data.success === false) {
-        dispatch(signInFailure(data.message as string));
-        return;
-      }
-      dispatch(signInSuccess(data));
-      navigate('/');
+      axios
+        .post('/api/auth/signin', formData)
+        .then((res) => {
+          const data = res.data;
+          dispatch(signInSuccess(data));
+          navigate('/');
+        })
+        .catch((err) => {
+          dispatch(signInFailure(err.response.data.message));
+          return;
+        });
     } catch (error) {
       dispatch(signInFailure((error as Error).message));
     }

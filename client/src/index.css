@@ -5,3 +5,7 @@
 body {
   background-color: #f4f5f3;
 }
+
+:root {
+  --swiper-navigation-color: rgb(127 29 29);
+}
