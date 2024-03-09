@@ -38,7 +38,7 @@ const Profile = () => {
   const [filePercent, setFilePercent] = useState(0);
   const [fileUploadError, setFileUploadError] = useState(false);
   const [formData, setFormData] = useState<FormData>({});
-  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [updateSuccess, setUpdateSuccess] = useState<boolean>(false);
   const [emailChange, setEmailChange] = useState(false);
   const [showListingsError, setShowListingsError] = useState(false);
   const [userListings, setUserListings] = useState<Listing[]>([]);
@@ -48,6 +48,23 @@ const Profile = () => {
       handleFileUpload(file);
     }
   }, [file]);
+
+  // State updates are async
+  useEffect(() => {
+    if (updateSuccess) {
+      toast.success(
+        `${updateSuccess ? 'User is updated successfully!\n' : ''}
+        ${
+          emailChange
+            ? 'Please remember to sign in with the updated email later on.'
+            : ''
+        }`,
+        {
+          position: 'top-center',
+        }
+      );
+    }
+  }, [updateSuccess, emailChange]);
 
   const handleFileUpload = (file: File) => {
     const storage = getStorage(app);
@@ -62,6 +79,7 @@ const Profile = () => {
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         setFilePercent(Math.round(progress));
+        setFileUploadError(false);
       },
       () => {
         setFileUploadError(true);
@@ -101,6 +119,14 @@ const Profile = () => {
   };
 
   const handleDeleteUser = async () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to delete your account?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
     dispatch(deleteUserStart());
     axios
       .delete(`/api/user/delete/${currentUser!.id}`)
@@ -150,7 +176,7 @@ const Profile = () => {
               behavior: 'smooth',
             });
           }
-        }, 500);
+        }, 300);
       })
       .catch(() => {
         setShowListingsError(true);
@@ -270,16 +296,7 @@ const Profile = () => {
       <p className='text-red-700 mt-5 font-semibold text-center'>
         {error ? error : ''}
       </p>
-      <p className='text-green-700 mt-5 font-semibold text-center'>
-        {updateSuccess
-          ? `User is updated successfully!
-            ${
-              emailChange
-                ? 'Please remember to sign in with the updated email later on.'
-                : ''
-            }`
-          : ''}
-      </p>
+
       <button
         onClick={handleShowListings}
         className='font-semibold text-green-700 w-full'

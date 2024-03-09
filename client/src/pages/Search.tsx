@@ -114,17 +114,18 @@ const Search = () => {
   };
 
   const onShowMoreClick = async () => {
-    const numberOfListings = listings.length;
-    const startIndex = numberOfListings;
+    const startIndex = listings.length;
     const urlParams = new URLSearchParams(location.search);
-    urlParams.set('startIndex', startIndex.toString());
+    urlParams.set('startIndex', startIndex.toString()); 
     const searchQuery = urlParams.toString();
-    const res = await fetch(`/api/listing/get?${searchQuery}`);
-    const data = await res.json();
-    if (data.length < 9) {
-      setShowMore(false);
-    }
-    setListings([...listings, ...data]);
+    // Start fetching listings from the start index
+    axios(`/api/listing/get?${searchQuery}`).then((res) => {
+      const data = res.data;
+      if (data.length < 9) {
+        setShowMore(false);
+      }
+      setListings([...listings, ...data]);
+    });
   };
 
   return (

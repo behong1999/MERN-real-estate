@@ -38,7 +38,7 @@ export const getListings = async (
 ) => {
   try {
     const limit = parseInt(req.query.limit as string) || 9;
-    const startIndex = parseInt(req.query.startIndex as string) || 0;
+    const startIndex = parseInt(req.query.startIndex as string) || 0; // The first document is at index 0 in MongoDB
 
     let offer = req.query.offer;
     let furnished = req.query.furnished;
