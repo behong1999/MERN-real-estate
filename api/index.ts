@@ -6,6 +6,7 @@ import authRouter from './routes/auth.route';
 import listingRouter from './routes/listing.route';
 import { CustomError } from './utils/error';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 
 dotenv.config();
 
@@ -18,7 +19,7 @@ mongoose
     console.log(err);
   });
 
-const app = express();
+const app = express(); 
 
 app.use(express.json());
 
@@ -31,6 +32,12 @@ app.listen(3000, () => {
 app.use('/api/user', userRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/listing', listingRouter);
+
+app.use(express.static(path.join(__dirname, 'client/dist')));
+
+app.get('*', (_, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+});
 
 app.use((err: CustomError, req: Request, res: Response, next: NextFunction) => {
   const statusCode = err.statusCode || 500;
