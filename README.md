@@ -1,6 +1,6 @@
 # Vin Estate
 ## Project Overview
-Real Estate Website using the MERN (React, MongoDB, Express.js Node.js with TypeScript) stack. In addition, using Firebase Storage and Authentication to store images and OAuth. 
+Real Estate Website using the MERN (React, MongoDB, Express.js Node.js with TypeScript) stack. In addition, using Firebase Storage and Authentication to store images and OAuth. This website allows users to buy, sell, and rent properties
 
 ## Server-Side Dependencies:
 - **bcrypt**: A library for hashing passwords securely.
