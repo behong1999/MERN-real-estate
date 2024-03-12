@@ -38,8 +38,7 @@ app.use(express.static(path.join(__dirname, 'client/dist')));
 app.get('*', (req, res) => {
   const sourceDir = path.join(__dirname, '..');
   const destination = path.join(sourceDir, 'client', 'dist', 'index.html');
-  console.log(destination)
-  res.sendFile(destination);
+  console.log(res.sendFile(destination));
 });
 
 app.use((err: CustomError, req: Request, res: Response, next: NextFunction) => {
