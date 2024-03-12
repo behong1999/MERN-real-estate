@@ -19,7 +19,7 @@ mongoose
     console.log(err);
   });
 
-const app = express(); 
+const app = express();
 
 app.use(express.json());
 
@@ -36,10 +36,11 @@ app.use('/api/listing', listingRouter);
 app.use(express.static(path.join(__dirname, 'client/dist')));
 
 app.get('*', (req, res) => {
-  const sourceDir = path.join(__dirname, '..'); 
-  res.sendFile(path.join(sourceDir, 'client', 'dist', 'index.html'));
+  const sourceDir = path.join(__dirname, '..');
+  const destination = path.join(sourceDir, 'client', 'dist', 'index.html');
+  console.log(destination)
+  res.sendFile(destination);
 });
-
 
 app.use((err: CustomError, req: Request, res: Response, next: NextFunction) => {
   const statusCode = err.statusCode || 500;
