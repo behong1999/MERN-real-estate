@@ -116,7 +116,7 @@ const Search = () => {
   const onShowMoreClick = async () => {
     const startIndex = listings.length;
     const urlParams = new URLSearchParams(location.search);
-    urlParams.set('startIndex', startIndex.toString()); 
+    urlParams.set('startIndex', startIndex.toString());
     const searchQuery = urlParams.toString();
     // Start fetching listings from the start index
     axios(`/api/listing/get?${searchQuery}`).then((res) => {
@@ -220,7 +220,7 @@ const Search = () => {
               className='border rounded-lg p-3'
             >
               <option value='regularPrice_desc'>Price high to low</option>
-              <option value='regularPrice_asc'>Price low to hight</option>
+              <option value='regularPrice_asc'>Price low to high</option>
               <option value='createdAt_desc'>Latest</option>
               <option value='createdAt_asc'>Oldest</option>
             </select>
