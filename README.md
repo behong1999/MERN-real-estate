@@ -25,4 +25,8 @@ Real Estate Website using the MERN (React, MongoDB, Express.js Node.js with Type
 - **redux-persist**: Enables the persistence of Redux state across sessions.
 - **swiper**: Modern, mobile-friendly slider library for React.
 
-## Watching Demo (Coming soon)
+## Demo
+<a href="https://youtu.be/oDqcfDlVw7c" target="_blank">
+  <span style="font-size: 1rem; text-align: center;">Click To Watch Demo</span>
+</a>
+
